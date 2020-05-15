@@ -95,9 +95,9 @@ class Receiver(gr.hier_block2):
         self.repack     = blocks.repack_bits_bb(config.get_bits_per_symbol(), 8, LEN_TAG_KEY, True)
         self.connect( self.serializer, self.demod, self.repack)
         self.decoder    = aux.decoder_reed_solomon_bb()
-        #self.commit_unt = aux.commit_to_output_bb() 
-        self.connect(self.repack, (self.decoder,0), self)
-        self.connect((self.decoder,1), blocks.null_sink(gr.sizeof_char))               
+        self.commit_unt = aux.commit_to_output_bb() 
+        self.connect(self.repack, (self.decoder,0), (self.commit_unt,0), self)
+        self.connect((self.decoder,1), (self.commit_unt,1))               
 		
 		
 		
