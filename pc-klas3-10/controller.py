@@ -3,7 +3,7 @@ import threading
 import buffer
 
 own_ip       = "192.168.0.2"
-target_ip    = "192.168.0.11"
+target_ip    = "192.168.0.2"
 own_port_in  = 9990
 own_port_out = 9991
 own_port_tod = 9992
@@ -104,6 +104,7 @@ def transmit():
     	        fragment[22]  = fragment[2] ^ fragment[7] ^ fragment[12] ^ fragment[17] 
     	        fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
     	        fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
+            interface.sendto(bytes(range(25)),target)
             if typ == 1:
     	        qack = False 
             elif type == 2:
@@ -125,14 +126,12 @@ def receive():
     pre_t = 0
     err_t = 0
     pre_r = 0
-    err_r = 0
-    print('receiving') 
+    err_r = 0 
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
         recv_b, addr = interface_d.recvfrom(1024)
         recv = list(recv_b)[0]
-        print(recv)
         if state == 0: #drop noise and wait for a transmission
             err_a = err_a    if recv  == 5 else err_a + 1
             err_r = err_r    if recv  == 6 else err_r + 1
@@ -145,8 +144,9 @@ def receive():
             err_t =  0       if err_t >  2 else err_t  
             state = 3  if (pre_r == 25)    else 0 
             state = 2  if pre_a == 25      else 0 
-            state = 1  if pre_t == 250     else 0 
+            state = 1  if pre_t == 25      else 0 
         elif state == 1:
+            print('found preamble')
             if tb:
                 state = 10
             else:

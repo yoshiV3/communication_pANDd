@@ -3,7 +3,7 @@ import threading
 import buffer
 
 own_ip       = "192.168.0.1"
-target_ip    = "192.168.0.10"
+target_ip    = "192.168.0.1"
 own_port_in  = 9990
 own_port_out = 9991
 own_port_tod = 9992
@@ -98,13 +98,13 @@ def transmit():
             for i in range(int(len(queue)/20)):
                 msg = bytes(fragment)
                 interface.sendto(msg, target)
-                print(len(fragment))
                 fragment[:20] = queue[i*20:(i+1)*20].copy()
                 fragment[20]  = fragment[0] ^ fragment[5] ^ fragment[10] ^ fragment[15] 
                 fragment[21]  = fragment[1] ^ fragment[6] ^ fragment[11] ^ fragment[16] 
                 fragment[22]  = fragment[2] ^ fragment[7] ^ fragment[12] ^ fragment[17] 
                 fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
                 fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
+            interface.sendto(bytes(range(25)),target)
             if typ == 1:
     	        qack = False 
             elif type == 2:
@@ -145,7 +145,7 @@ def receive():
             err_t =  0       if err_t >  2 else err_t  
             state = 3  if (pre_r == 25)    else 0 
             state = 2  if pre_a == 25      else 0 
-            state = 1  if pre_t == 250     else 0 
+            state = 1  if pre_t == 25     else 0 
         elif state == 1:
             if tb:
                 state = 10
