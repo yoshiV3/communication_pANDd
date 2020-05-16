@@ -1,0 +1,16 @@
+Pc-klas3-7
+
+
+Transmitter:   central frequency: 1.7 Ghz: UDP interface: 192.168.0.1: 9990
+Receiver:      central frequency: 1.8 GHz  UDP interface: 192.168.0.1: 9991
+
+Internal UDP tunnel control to radio: 192.168.0.1:9992
+internal UDP tunnel radio to control: 192.168.0.1:9993
+
+Pc-klas3-10
+
+Transmitter:  Central frequency:  1.8Ghz   UDP interface 192.168.0.2: 9990  
+Receiver:     Central frequency:  1.7Ghz   UDP interface 192.168.0.2: 9991
+
+Internal UDP tunnel control to radio: 192.168.0.2:9992
+internal UDP tunnel radio to control: 192.168.0.2:9993
