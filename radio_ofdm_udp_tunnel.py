@@ -5,8 +5,8 @@ from gnuradio import iio
 TRANSMITTER       = "192.168.2.1"
 RECEIVER          = "192.168.0.10"
 CENTRAL_FREQUENCY = 1800000000
-SAMPLE_RATE       = 4000000         
-BANDWIDTH_RF      = 4000000       
+SAMPLE_RATE       = 4200000         
+BANDWIDTH_RF      = 4200000       
 BUFFER_SIZE       = 0x8000
 ATTENUATION       = 0
 FILTER            = ''
