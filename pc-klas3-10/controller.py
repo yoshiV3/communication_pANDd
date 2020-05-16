@@ -132,19 +132,21 @@ def receive():
     while True:
         recv_b, addr = interface_d.recvfrom(1024)
         recv = list(recv_b)
+        print(recv)
         if state == 0: #drop noise and wait for a transmission
-            err_a = err_a    if recv  == 5 else err_a + 1
-            err_r = err_r    if recv  == 6 else err_r + 1
-            err_t = err_t    if recv  == 3 else err_r + 1
-            pre_a = pre_a +1 if err_a <= 2 else 0
-            pre_r = pre_r +1 if err_r <= 2 else 0
-            pre_t = pre_t +1 if err_t <= 2 else 0
-            err_a =  0       if err_a >  2 else err_a 
-            err_r =  0       if err_r >  2 else err_r
-            err_t =  0       if err_t >  2 else err_t  
-            state = 3  if (pre_r == 25)    else 0 
-            state = 2  if pre_a == 25      else 0 
-            state = 1  if pre_t == 25      else 0 
+            for r in recv:
+                err_a = err_a    if r  == 5 else err_a + 1
+                err_r = err_r    if r  == 6 else err_r + 1
+                err_t = err_t    if r  == 3 else err_r + 1
+                pre_a = pre_a +1 if err_a <= 2 else 0
+                pre_r = pre_r +1 if err_r <= 2 else 0
+                pre_t = pre_t +1 if err_t <= 2 else 0
+                err_a =  0       if err_a >  2 else err_a 
+                err_r =  0       if err_r >  2 else err_r
+                err_t =  0       if err_t >  2 else err_t  
+                state = 3  if (pre_r == 25)    else 0 
+                state = 2  if pre_a == 25      else 0 
+                state = 1  if pre_t == 25      else 0 
         elif state == 1:
             if tb:
                 state = 10
@@ -154,6 +156,7 @@ def receive():
                     t_buf.append(element)
                 state  = 4.
         elif state == 4:
+            print(len(recv))
             pre_t = pre_t + 5
             for element in recv:
                 t_buf.append(element)
