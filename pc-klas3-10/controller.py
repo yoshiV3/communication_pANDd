@@ -67,6 +67,7 @@ def put_data_from_socket_to_buffer():
 def transmit():
     global queue_main
     global queue_trans
+    global target_ip
     global qtrns
     global queue_retr
     global qretr
@@ -86,18 +87,18 @@ def transmit():
         if len(queue_main) >= 1:
             typ = queue_main.pop(0)
             if typ ==0:
-        	    framgment = first_packetT.copy()
+        	    fragment = first_packetT.copy()
         	    queue     = queue_trans.pop(0)
             elif typ ==1:
-        	    framgment = first_packetA.copy()
+        	    fragment = first_packetA.copy()
         	    queue     = queue_ack.pop(0)
             else:
-        	    framgment = first_packetR.copy()
+        	    fragment = first_packetR.copy()
         	    queue     = queue_retr.pop(0)   
             for i in range(int(len(queue)/20)):
     	        msg = bytes(fragment)
     	        interface.sendto(msg, target)
-    	        fragment[:20] = queue_trans[i*20:(i+1)*20].copy()
+    	        fragment[:20] = queue[i*20:(i+1)*20].copy()
     	        fragment[20]  = fragment[0] ^ fragment[5] ^ fragment[10] ^ fragment[15] 
     	        fragment[21]  = fragment[1] ^ fragment[6] ^ fragment[11] ^ fragment[16] 
     	        fragment[22]  = fragment[2] ^ fragment[7] ^ fragment[12] ^ fragment[17] 
@@ -125,12 +126,13 @@ def receive():
     err_t = 0
     pre_r = 0
     err_r = 0
-    dre   = False 
+    print('receiving') 
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
         recv_b, addr = interface_d.recvfrom(1024)
         recv = list(recv_b)[0]
+        print(recv)
         if state == 0: #drop noise and wait for a transmission
             err_a = err_a    if recv  == 5 else err_a + 1
             err_r = err_r    if recv  == 6 else err_r + 1
@@ -312,7 +314,7 @@ def main():
     threading.Thread(target=parse_recv).start()
     threading.Thread(target=parse_ack).start()
     threading.Thread(target=parse_re).start()
-    	               	            
+main()   	               	            
     	            
     	            
     	            

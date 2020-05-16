@@ -72,6 +72,7 @@ def transmit():
     global qretr
     global queue_ack
     global qack
+    global target_ip
     global own_ip
     global own_port
     global own_port_tod
@@ -86,23 +87,24 @@ def transmit():
         if len(queue_main) >= 1:
             typ = queue_main.pop(0)
             if typ ==0:
-        	    framgment = first_packetT.copy()
+        	    fragment = first_packetT.copy()
         	    queue     = queue_trans.pop(0)
             elif typ ==1:
-        	    framgment = first_packetA.copy()
+        	    fragment = first_packetA.copy()
         	    queue     = queue_ack.pop(0)
             else:
-        	    framgment = first_packetR.copy()
+        	    fragment = first_packetR.copy()
         	    queue     = queue_retr.pop(0)   
             for i in range(int(len(queue)/20)):
-    	        msg = bytes(fragment)
-    	        interface.sendto(msg, target)
-    	        fragment[:20] = queue_trans[i*20:(i+1)*20].copy()
-    	        fragment[20]  = fragment[0] ^ fragment[5] ^ fragment[10] ^ fragment[15] 
-    	        fragment[21]  = fragment[1] ^ fragment[6] ^ fragment[11] ^ fragment[16] 
-    	        fragment[22]  = fragment[2] ^ fragment[7] ^ fragment[12] ^ fragment[17] 
-    	        fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
-    	        fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
+                msg = bytes(fragment)
+                interface.sendto(msg, target)
+                print(len(fragment))
+                fragment[:20] = queue[i*20:(i+1)*20].copy()
+                fragment[20]  = fragment[0] ^ fragment[5] ^ fragment[10] ^ fragment[15] 
+                fragment[21]  = fragment[1] ^ fragment[6] ^ fragment[11] ^ fragment[16] 
+                fragment[22]  = fragment[2] ^ fragment[7] ^ fragment[12] ^ fragment[17] 
+                fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
+                fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
             if typ == 1:
     	        qack = False 
             elif type == 2:
@@ -312,7 +314,7 @@ def main():
     threading.Thread(target=parse_recv).start()
     threading.Thread(target=parse_ack).start()
     threading.Thread(target=parse_re).start()
-    	               	            
+main()    	               	            
     	            
     	            
     	            

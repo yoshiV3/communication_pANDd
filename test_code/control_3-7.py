@@ -9,7 +9,6 @@ msg = bytes([200]*200)
 interface.sendto(msg, addr)
 r = []
 for i in range(400):
-while True:
 	recv, addr = interface.recvfrom(1024)
 	recv = list(recv)
 	r.append(recv)
