@@ -104,6 +104,7 @@ def transmit():
     	        fragment[22]  = fragment[2] ^ fragment[7] ^ fragment[12] ^ fragment[17] 
     	        fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
     	        fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
+            interface.sendto(bytes(fragment),target)
             interface.sendto(bytes(range(25)),target)
             if typ == 1:
     	        qack = False 
@@ -132,6 +133,8 @@ def receive():
     while True:
         recv_b, addr = interface_d.recvfrom(1024)
         recv_l = list(recv_b)
+        print(state)
+        print(recv_l)
         for recv in recv_l:
             if state == 0: #drop noise and wait for a transmission
                     err_a = err_a    if recv  == 5 else err_a + 1
@@ -150,11 +153,11 @@ def receive():
                 if tb:
                     state = 10
                 else:
-                    pre_t = 5
+                    pre_t = 1
                     t_buf.append(recv)
                     state  = 4.
             elif state == 4:
-                pre_t = pre_t + 5
+                pre_t = pre_t + 1
                 t_buf.append(recv)
                 state = 7 if pre_t == 250 else 4
             elif state == 2:
@@ -162,10 +165,10 @@ def receive():
                     state = 10
                 else:
                     a_buf.append(recv)
-                    pre_a = 5
+                    pre_a = 1
                     state = 5 
             elif state == 5:
-                pre_a = pre_a + 5
+                pre_a = pre_a + 1
                 a_buf.append(recv)
                 state = 8 if pre_a == 25 else 5
             elif state == 3:
@@ -173,10 +176,10 @@ def receive():
                     state = 10
                 else:
                     r_buf.append(recv)
-                    pre_r = 5
+                    pre_r = 1
                     state = 6
             elif state == 6:
-                pre_r = pre_r + 5
+                pre_r = pre_r + 1
                 r_buf.append(recv)
                 state = 9 if pre_r == 25 else 6
             elif state == 7:
