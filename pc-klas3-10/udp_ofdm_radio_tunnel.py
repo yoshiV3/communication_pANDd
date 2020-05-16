@@ -20,7 +20,7 @@ MANUAL_GAIN       = 64.0
 class test_bench_radio(gr.top_block):
     def __init__(self):
         gr.top_block.__init__(self, "Top Block")
-        udp_source  = blocks.udp_source(1,"192.168.0.2", 9990, 4)
+        udp_source  = blocks.udp_source(1,"192.168.0.2", 9992, 25)
         #ofdm_trans = digital.ofdm_txrx.ofdm_tx()
         ofdm_trans  = o.Transmitter()
         radio       = iio.pluto_sink(TRANSMITTER,CENTRAL_FREQUENCY,
