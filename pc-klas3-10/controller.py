@@ -146,7 +146,6 @@ def receive():
             state = 2  if pre_a == 25      else 0 
             state = 1  if pre_t == 25      else 0 
         elif state == 1:
-            print('found preamble')
             if tb:
                 state = 10
             else:

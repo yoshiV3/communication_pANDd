@@ -150,34 +150,40 @@ def receive():
             if tb:
                 state = 10
             else:
-                pre_t = 1
-                t_buf.append(recv)
+                pre_t = 5
+                for element in recv:
+                    t_buf.append(element)
                 state  = 4.
         elif state == 4:
-            pre_t = pre_t + 1
-            t_buf.append(recv)
+            pre_t = pre_t + 5
+            for element in recv:
+                t_buf.append(element)
             state = 7 if pre_t == 250 else 4
         elif state == 2:
             if ab:
                 state = 10
             else:
-                a_buf.append(recv)
-                pre_a = 1
+                for element in recv:
+                    a_buf.append(element)
+                pre_a = 5
                 state = 5 
         elif state == 5:
-            pre_a = pre_a + 1
-            a_buf.append(recv)
+            pre_a = pre_a + 5
+            for element in recv:
+                a_buf.append(element)
             state = 8 if pre_a == 25 else 5
         elif state == 3:
             if rb:
                 state = 10
             else:
-                r_buf.append(recv)
-                pre_r = 1
+                for element in recv:
+                    r_buf.append(element)
+                pre_r = 5
                 state = 6
         elif state == 6:
-            pre_r = pre_r + 1
-            r_buf.append(recv)
+            pre_r = pre_r + 5
+            for element in recv:
+                r_buf.append(element)
             state = 9 if pre_r == 25 else 6
         elif state == 7:
             tb    = True 
