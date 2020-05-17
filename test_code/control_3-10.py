@@ -9,7 +9,6 @@ msg = bytes([200]*200)
 r = []
 recv, addr = interface.recvfrom(4096)
 recv = list(recv)
-r.append(recv[0])
 interface.sendto(msg, addr)
-print(r)
+print(recv)
 
