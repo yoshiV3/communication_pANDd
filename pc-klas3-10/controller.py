@@ -128,19 +128,19 @@ def receive():
     err_t = 0
     pre_r = 0
     err_r = 0
+    pre   = 0
     hist  = [0]*8 
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
         recv_b, addr = interface_d.recvfrom(1024)
         recv_l = list(recv_b)
-        print(state)
-        print(recv_l)
         for recv in recv_l:
             if state == 0: #drop noise and wait for a transmission
                 hist.pop(0)
                 hist.append(recv)
                 exp = 0
+                err = 0
                 for element in hist:
                     err = err + 1 if element != exp else err
                     exp = exp + 1
@@ -175,7 +175,7 @@ def receive():
                 else:
                     r_buf.append(recv)
                     pre_r  = pre_r + 1
-                    state  = 7 if(pre_e==25) else 4
+                    state  = 7 if(pre_r==25) else 4
             elif state == 5:
                 tb    = True 
                 state = 11        
@@ -187,6 +187,7 @@ def receive():
                 state = 11 
             if state == 11:
                 state = 0
+                pre   = 0
                 pre_r = 0
                 err_r = 0
                 pre_t = 0
@@ -208,7 +209,7 @@ def send_r_data():
         if outp:
             msg = bytes(output)
             interface_out.sendto(msg, target)
-            output = []
+            print(output)
             outp = False 
 def parse_recv():
     global tb
@@ -232,8 +233,8 @@ def parse_recv():
                     correct = correct and t_buf[p*25+23]  == t_buf[p*25+3] ^ t_buf[p*25+8] ^ t_buf[p*25+13] ^ t_buf[p*25+18] 
                     correct = correct and t_buf[p*25+24]  == t_buf[p*25+4] ^ t_buf[p*25+9] ^ t_buf[p*25+14] ^ t_buf[p*25+19]
                     if correct:
-    	                q[10+p] = 255
-    	                c = c +1
+                        q[10+p] = 255
+                        c = c +1
                     else:
     	                q[10+p] = 0
                 if c == 10:
@@ -285,24 +286,28 @@ def parse_re():
     global rb
     global temp_pack
     global tmppa
+    global output
+    global outp
     intra = []
     while True:
-        if rb:
+        if rb and not outp:
             temp = r_buf.copy()
+            r_buf = []
             rb = False
             if tmppa:
                 intra.append(temp)
                 z  = 0
                 for index in range(10):
                     z = z + 1 if temp[index] == 10 else z
-                if z > 8:
+                if z >=  8:
                     pre = -1
                     for i in range(len(intra)-1):
                         index =  temp[10+i] 
                         if pre < index < 10:
                             temp_pack[index*20: (index+1)*20] = intra[i][0:20]
-                output =  temp_pack.copy()
-                outp   = True                                       
+                    output =  temp_pack.copy()
+                    outp   = True 
+                    tmppa  = False                                       
 def main():
     threading.Thread(target=retrieve_data).start()
     threading.Thread(target=put_data_from_socket_to_buffer).start()                                   

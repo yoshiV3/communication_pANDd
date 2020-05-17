@@ -128,19 +128,19 @@ def receive():
     err_t = 0
     pre_r = 0
     err_r = 0
+    pre   = 0
     hist  = [0]*8 
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
         recv_b, addr = interface_d.recvfrom(1024)
         recv_l = list(recv_b)
-        print(state)
-        print(recv_l)
         for recv in recv_l:
             if state == 0: #drop noise and wait for a transmission
                 hist.pop(0)
                 hist.append(recv)
                 exp = 0
+                err = 0 
                 for element in hist:
                     err = err + 1 if element != exp else err
                     exp = exp + 1
@@ -192,6 +192,7 @@ def receive():
                 pre_t = 0
                 err_t = 0
                 pre_a = 0
+                pre   = 0
                 err_a = 0 
                 hist  = [0]*8           	
 def send_r_data():
@@ -275,7 +276,7 @@ def parse_ack():
                               queue_retr.append(re.copy())
                               queue_main.append(2)
                               qretr = True
-                   queue_retr.append(final)                                                              
+                   queue_retr.append(final)                                                             
                    queue_main.append(2)
                    qretr = True                                   
                a_buf = []
@@ -289,6 +290,7 @@ def parse_re():
     while True:
         if rb:
             temp = r_buf.copy()
+            r_buf = []
             rb = False
             if tmppa:
                 intra.append(temp)
