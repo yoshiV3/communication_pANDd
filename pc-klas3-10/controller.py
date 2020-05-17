@@ -43,12 +43,12 @@ def retrieve_data():
 	while True:
 	    can_transmit=   (not updating_buffer) and ( not qtrns) and (trans_buffer.um > 0)  #There is new data, there is no transmission and the buffer is not being updated
 	    if can_transmit:
-	        updating_buffer = True
-	        current_packet = trans_buffer.read().copy()
-	        queue_trans.append(current_packet.copy())
-	        updating_buffer = False
-	        qtrns = True
-	        queue_main.append(0)
+                updating_buffer = True
+                current_packet = trans_buffer.read().copy()
+                queue_trans.append(current_packet.copy())
+                updating_buffer = False
+                qtrns = True
+                queue_main.append(0)
 def put_data_from_socket_to_buffer():
     global updating_buffer
     global trans_buffer
@@ -57,10 +57,13 @@ def put_data_from_socket_to_buffer():
     interface = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface.bind((own_ip, own_port_in))
     while True:
+        print(updating_buffer)
         recv_b, addr = interface.recvfrom(1024)
         recv = list(recv_b)
+        print('received some data')
         while updating_buffer:
             pass
+        print('new data')
         updating_buffer = True
         trans_buffer.write(recv)
         updating_buffer = False
@@ -85,8 +88,9 @@ def transmit():
     fragment = [0 for x in range(25)]
     while True:
         if len(queue_main) >= 1:
-            typ = queue_main.pop(0)
-            if typ ==0:
+            typ = queue_main.pop(0) 
+            print(typ)
+            if typ == 0:
         	    fragment = first_packetT.copy()
         	    queue     = queue_trans.pop(0)
             elif typ ==1:
@@ -105,17 +109,18 @@ def transmit():
     	        fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
     	        fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
             interface.sendto(bytes(fragment),target)
-            interface.sendto(bytes(range(25)),target)
+            interface.sendto(bytes([200]*25),target)
             if typ == 1:
     	        qack = False 
-            elif type == 2:
+            elif typ == 2:
     	        if len(queue_retr) == 0:
     	    	    qretr = False 
-    	    	    gtrns = False 
+    	    	    qtrns = False 
 def receive():
     global own_ip
     global own_port_frd
     global r_buf
+    r_buf_t = []
     global t_buf
     global a_buf
     global rb
@@ -136,6 +141,7 @@ def receive():
         recv_b, addr = interface_d.recvfrom(1024)
         recv_l = list(recv_b)
         for recv in recv_l:
+            print(recv)
             if state == 0: #drop noise and wait for a transmission
                 hist.pop(0)
                 hist.append(recv)
@@ -152,38 +158,39 @@ def receive():
                 err_a = err_a + 1 if recv != 5 else err_a
                 err_t = err_t + 1 if recv != 3 else err_t
                 if pre == 17:
-                	state = 2 if  (err_t < 2) else ( 3 if (err_a < 2) else (4 if (err_r < 2) else 11))
+                	state = 2 if  (err_t <= 3) else ( 3 if (err_a <= 3) else (4 if (err_r <= 3) else 11))
                 else:
-                    state = 11 if (err_t > 2) and  (err_a > 2)  and (err_r > 2) else 1 
+                    state = 11 if (err_t > 3) and  (err_a > 3)  and (err_r > 3) else 1 
             elif state == 2:
                 if tb:
                     state = 11
                 else:
                     pre_t = pre_t + 1
                     t_buf.append(recv)
-                    state  = 5 if(pre_t==250) else 2
+                    state  = 5 if(pre_t==249) else 2
             elif state == 3:
                 if ab:
                     state = 11
                 else:
                     a_buf.append(recv)
                     pre_a = pre_a + 1
-                    state  = 6 if(pre_a==25) else 3
+                    state  = 6 if(pre_a==24) else 3
             elif state == 4:
-                if rb:
-                    state = 10
-                else:
-                    r_buf.append(recv)
-                    pre_r  = pre_r + 1
-                    state  = 7 if(pre_r==25) else 4
+                r_buf_t.append(recv)
+                pre_r  = pre_r + 1
+                state  = 7 if(pre_r==24) else 4
             elif state == 5:
+                t_buf.append(recv)
                 tb    = True 
                 state = 11        
             elif state == 6:
+                a_buf.append(recv)
                 ab    = True
                 state = 11
             elif state == 7:
-                rb    = True
+                r_buf_t.append(recv)
+                r_buf.append(r_buf_t.copy())
+                r_buf_t = []
                 state = 11 
             if state == 11:
                 state = 0
@@ -209,19 +216,20 @@ def send_r_data():
         if outp:
             msg = bytes(output)
             interface_out.sendto(msg, target)
-            print(output)
             outp = False 
 def parse_recv():
     global tb
     global t_buf
     global temp_pack
     global tmppa
+    global qtrns 
     global queue_main
     global queue_ack
     global qack
     while True:
         if tb:
             if not (qack or tmppa):
+                temp_pack = []
                 q = [255]*20
                 c = 0
                 for p in range(10):
@@ -240,6 +248,7 @@ def parse_recv():
                 if c == 10:
                     for i in range(10):
                         q[i]  = 0
+                    qtrns = False 
                     output = temp_pack.copy()
                     outp   = True
                 queue_ack.append(q)
@@ -290,15 +299,15 @@ def parse_re():
     global outp
     intra = []
     while True:
-        if rb and not outp:
-            temp = r_buf.copy()
-            r_buf = []
-            rb = False
+        if len(r_buf) > 0 and not outp:
+            temp = r_buf.pop(0).copy()
             if tmppa:
                 intra.append(temp)
                 z  = 0
                 for index in range(10):
                     z = z + 1 if temp[index] == 10 else z
+                if z <  8:
+                    print(len(temp_pack))
                 if z >=  8:
                     pre = -1
                     for i in range(len(intra)-1):

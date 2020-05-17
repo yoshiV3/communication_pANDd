@@ -41,14 +41,15 @@ def retrieve_data():
 	global current_packet 
 	global trans_buffer
 	while True:
-	    can_transmit=   (not updating_buffer) and ( not qtrns) and (trans_buffer.um > 0)  #There is new data, there is no transmission and the buffer is not being updated
-	    if can_transmit:
-	        updating_buffer = True
-	        current_packet = trans_buffer.read().copy()
-	        queue_trans.append(current_packet.copy())
-	        updating_buffer = False
-	        qtrns = True
-	        queue_main.append(0)
+            can_transmit=   (not updating_buffer) and ( not qtrns) and (trans_buffer.um > 0)  #There is new data, there is no transmission and the buffer is not being updated
+            if can_transmit:
+                print('data to queue')
+                updating_buffer = True
+                current_packet = trans_buffer.read().copy()
+                queue_trans.append(current_packet.copy())
+                updating_buffer = False
+                qtrns = True
+                queue_main.append(0)
 def put_data_from_socket_to_buffer():
     global updating_buffer
     global trans_buffer
@@ -59,6 +60,7 @@ def put_data_from_socket_to_buffer():
     while True:
         recv_b, addr = interface.recvfrom(1024)
         recv = list(recv_b)
+        print('new data')
         while updating_buffer:
             pass
         updating_buffer = True
@@ -105,20 +107,21 @@ def transmit():
                 fragment[23]  = fragment[3] ^ fragment[8] ^ fragment[13] ^ fragment[18] 
                 fragment[24]  = fragment[4] ^ fragment[9] ^ fragment[14] ^ fragment[19]
             interface.sendto(bytes(fragment),target)
-            interface.sendto(bytes([0]*25),target)
+            interface.sendto(bytes([200]*25),target)
             if typ == 1:
     	        qack = False 
-            elif type == 2:
-    	        if len(queue_retr) == 0:
-    	    	    qretr = False 
-    	    	    gtrns = False 
+            elif typ == 2:
+               if len(queue_retr) == 0:
+                    print('retransmissions done')
+                    qretr = False 
+                    qtrns = False 
 def receive():
     global own_ip
     global own_port_frd
     global r_buf
+    r_buf_t = []
     global t_buf
     global a_buf
-    global rb
     global tb
     global ab
     state = 0
@@ -133,6 +136,7 @@ def receive():
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
+        print(state)
         recv_b, addr = interface_d.recvfrom(1024)
         recv_l = list(recv_b)
         for recv in recv_l:
@@ -152,40 +156,44 @@ def receive():
                 err_a = err_a + 1 if recv != 5 else err_a
                 err_t = err_t + 1 if recv != 3 else err_t
                 if pre == 17:
-                	state = 2 if  (err_t < 2) else ( 3 if (err_a < 2) else (4 if (err_r < 2) else 11))
+                	state = 2 if  (err_t <= 3) else ( 3 if (err_a <= 3) else (4 if (err_r <= 3) else 11))
                 else:
-                    state = 11 if (err_t > 2) and  (err_a > 2)  and (err_r > 2) else 1 
+                    state = 11 if (err_t > 3) and  (err_a > 3)  and (err_r > 3) else 1 
             elif state == 2:
                 if tb:
                     state = 11
                 else:
                     pre_t = pre_t + 1
                     t_buf.append(recv)
-                    state  = 5 if(pre_t==250) else 2
+                    state  = 5 if(pre_t==249) else 2
             elif state == 3:
                 if ab:
                     state = 11
                 else:
                     a_buf.append(recv)
                     pre_a = pre_a + 1
-                    state  = 6 if(pre_a==25) else 3
+                    state  = 6 if(pre_a==24) else 3
             elif state == 4:
                 if rb:
-                    state = 10
+                    state = 11
                 else:
-                    r_buf.append(recv)
+                    r_buf_t.append(recv)
                     pre_r  = pre_r + 1
-                    state  = 7 if(pre_e==25) else 4
+                    state  = 7 if(pre_r==24) else 4
             elif state == 5:
+                t_buf.append(recv)
                 tb    = True 
                 state = 11        
             elif state == 6:
+                a_buf.append(recv)
                 ab    = True
                 state = 11
             elif state == 7:
-                rb    = True
+                r_buf_t.append(recv)
+                r_buf.append(r_buf_t.copy())
+                r_buf_t = []
                 state = 11 
-            if state == 11:
+            elif state == 11:
                 state = 0
                 pre_r = 0
                 err_r = 0
@@ -202,11 +210,20 @@ def send_r_data():
     global own_port_out
     global output
     global outp
+    global t_buf
+    global a_buf 
+    global ab
+    global tb
     interface_out = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_out.bind((own_ip, own_port_two))
     target = (own_ip,own_port_out)
     while True:
         if outp:
+            t_buf = []
+            a_buf = []
+            ab = False 
+            tb = False 
+            print("return")
             msg = bytes(output)
             interface_out.sendto(msg, target)
             output = []
@@ -219,9 +236,15 @@ def parse_recv():
     global queue_main
     global queue_ack
     global qack
+    global outp 
+    global output
+    global qtrns
     while True:
         if tb:
+            print(qack)
+            print(tmppa)
             if not (qack or tmppa):
+                temp_pack = []
                 q = [255]*20
                 c = 0
                 for p in range(10):
@@ -240,6 +263,7 @@ def parse_recv():
                 if c == 10:
                     for i in range(10):
                         q[i]  = 0
+                    qtrns = False
                     output = temp_pack.copy()
                     outp   = True
                 queue_ack.append(q)
@@ -247,7 +271,8 @@ def parse_recv():
                 qack   = True
                 queue_main.append(1)
                 t_buf = []
-                tb    = False   	            
+                tb    = False
+                print("send ack")   	            
 def parse_ack():
     global ab
     global a_buf 
@@ -283,15 +308,14 @@ def parse_ack():
                ab    = False 
 def parse_re():
     global r_buf
-    global rb
     global temp_pack
     global tmppa
+    global outp
+    global output
     intra = []
     while True:
-        if rb:
-            temp = r_buf.copy()
-            r_buf = []
-            rb = False
+        if (len(r_buf)> 0) and not outp:
+            temp = r_buf.pop(0).copy()
             if tmppa:
                 intra.append(temp)
                 z  = 0
@@ -303,8 +327,10 @@ def parse_re():
                         index =  temp[10+i] 
                         if pre < index < 10:
                             temp_pack[index*20: (index+1)*20] = intra[i][0:20]
-                output =  temp_pack.copy()
-                outp   = True                                       
+                    output =  temp_pack.copy()
+                    temp_pack = []
+                    tmppa     = False 
+                    outp      = True                                       
 def main():
     threading.Thread(target=retrieve_data).start()
     threading.Thread(target=put_data_from_socket_to_buffer).start()                                   

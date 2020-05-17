@@ -44,7 +44,7 @@ class Transmitter(gr.hier_block2):
 				0,
 				LEN_TAG_KEY
 			)
-        self.burst_handler = aux.add_zeros_cc(10,104)#digital.burst_shaper_cc([],1040,1040,False, LEN_TAG_KEY)
+        self.burst_handler = aux.add_zeros_cc(1,104)#digital.burst_shaper_cc([],1040,1040,False, LEN_TAG_KEY)
         self.connect(self.fft_block, self.prefixer, self.burst_handler)
         self.connect(self.burst_handler, self)
 class Receiver(gr.hier_block2):
