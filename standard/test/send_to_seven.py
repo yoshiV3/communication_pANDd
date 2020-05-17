@@ -2,7 +2,7 @@ import socket
 import time
 
 interface = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-interface.bind(('192.168.0.1', 9991))
+interface.bind(('192.168.0.2', 9991))
 addr = ("192.168.0.2", 9992)
 
 for i in range(200):

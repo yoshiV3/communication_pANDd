@@ -5,8 +5,8 @@ from gnuradio import iio
 TRANSMITTER       = "192.168.2.1"
 RECEIVER          = "192.168.0.10"
 CENTRAL_FREQUENCY = 1800000000
-SAMPLE_RATE       = 4400000         
-BANDWIDTH_RF      = 4400000       
+SAMPLE_RATE       = 4600000         
+BANDWIDTH_RF      = 4600000       
 BUFFER_SIZE       = 0x8000
 ATTENUATION       = 0
 FILTER            = ''
@@ -15,7 +15,7 @@ QUADRA_TRACKING   = True
 DC_TRACKING       = True
 BB_TRACKING       = True
 GAIN_MODE         = "manual"
-MANUAL_GAIN       = 33
+MANUAL_GAIN       = 40
 
 
 class test_bench_radio(gr.top_block):
