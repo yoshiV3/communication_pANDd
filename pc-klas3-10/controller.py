@@ -121,8 +121,6 @@ def receive():
     global rb
     global tb
     global ab
-    err   = 0
-    pre   = 0
     state = 0
     pre_a = 0
     err_a = 0
@@ -130,7 +128,7 @@ def receive():
     err_t = 0
     pre_r = 0
     err_r = 0
-    exp   = 0 
+    hist  = [0]*8 
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
@@ -140,12 +138,14 @@ def receive():
         print(recv_l)
         for recv in recv_l:
             if state == 0: #drop noise and wait for a transmission
-                err = err + 1	if recv != exp else err
-                if err > 2:
-                    state = 11
-                else:
+                hist.pop(0)
+                hist.append(recv)
+                exp = 0
+                for element in hist:
+                    err = err + 1 if element != exp else err
                     exp = exp + 1
-                    stata = 1 if exp ==8 else 0
+                if err <= 2:
+                    state = 1
             elif state ==1:
                 pre   = pre  + 1
                 err_r = err_r + 1 if recv != 6 else err_r
@@ -187,15 +187,13 @@ def receive():
                 state = 11 
             if state == 11:
                 state = 0
-                pre   = 0
-                err   = 0
-                exp   = 0
                 pre_r = 0
                 err_r = 0
                 pre_t = 0
                 err_t = 0
                 pre_a = 0
-                err_a = 0            	
+                err_a = 0 
+                hist  = [0]*8            	
 def send_r_data():
     global own_ip
     global own_port_two
