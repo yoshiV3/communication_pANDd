@@ -79,9 +79,9 @@ def transmit():
     interface = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface.bind((own_ip, own_port))
     target   = (target_ip,own_port_tod)
-    first_packetT = [x for range(8)] + [3 for i in range(17)]
-    first_packetA = [x for range(8)] + [5 for i in range(17)]
-    first_packetR = [x for range(8)] + [6 for i in range(17)]
+    first_packetT = [x for x in range(8)] + [3 for i in range(17)]
+    first_packetA = [x for x in range(8)] + [5 for i in range(17)]
+    first_packetR = [x for x in range(8)] + [6 for i in range(17)]
     fragment = [0 for x in range(25)]
     while True:
         if len(queue_main) >= 1:
@@ -130,7 +130,7 @@ def receive():
     err_t = 0
     pre_r = 0
     err_r = 0
-    exp   = 1 
+    exp   = 0 
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     while True:
@@ -189,7 +189,7 @@ def receive():
                 state = 0
                 pre   = 0
                 err   = 0
-                exp   = 1
+                exp   = 0
                 pre_r = 0
                 err_r = 0
                 pre_t = 0
