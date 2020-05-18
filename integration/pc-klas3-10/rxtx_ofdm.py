@@ -11,10 +11,9 @@ class Transmitter(gr.hier_block2):
 					gr.io_signature(1, 1, gr.sizeof_char),
                     			gr.io_signature(1, 1, gr.sizeof_gr_complex))
         self.sequencr = aux.insert_sequence_numbers_bb()
-        self.encoderf  = aux.encoder_reed_solomon_bb()   
-        self.encoders  = aux.encoder_reed_solomon_bb()                    			
+        self.encoderf  = aux.encoder_reed_solomon_bb()                      			
         self.framer   = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, config.get_bytes_per_frame() , LEN_TAG_KEY) #divide the incoming data streams in frames
-        self.connect(self, self.sequencr, self.encoderf,self.encoders,self.framer)
+        self.connect(self, self.sequencr, self.encoderf,self.framer)
                 #We can do some byte scrambling if needed (variable modulus modulation ) 		
         self.unpacker_data_stream   = blocks.repack_bits_bb(    #modulation of the data (split the bytes, and modulate the split bytes 
 				8,
@@ -95,11 +94,9 @@ class Receiver(gr.hier_block2):
         self.demod      = digital.constellation_decoder_cb(config.get_constellation().base())
         self.repack     = blocks.repack_bits_bb(config.get_bits_per_symbol(), 8, LEN_TAG_KEY, True)
         self.connect( self.serializer, self.demod, self.repack)
-        self.decoders    = aux.decoder_reed_solomon_bb()
         self.decoderf    = aux.decoder_reed_solomon_bb()
         self.commit_unt = aux.commit_to_output_bb()
-        self.connect((self.decoders,1), blocks.null_sink(gr.sizeof_char))  
-        self.connect(self.repack,(self.decoders,0), (self.decoderf,0), (self.commit_unt,0), self)
+        self.connect(self.repack, (self.decoderf,0), (self.commit_unt,0), self)
         self.connect((self.decoderf,1), (self.commit_unt,1))                 
 		
 		
