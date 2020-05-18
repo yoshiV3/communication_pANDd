@@ -8,13 +8,17 @@ def rs_generator_poly():
 	return g
 
 def encode_msg(msg, gen):
-	msg_out = [0] * (4)
-	msg_out[:2] = msg
-	for i in range(2):
-	 	coef = msg_out[i]
-	 	if coef != 0:
-	 		for j in range(1, 3):
-	 			msg_out[i+j] ^= mul(gen[j], coef)
-	msg_out[:2] = msg
-	return msg_out	
-
+    msg_out = [0] * (4)
+    msg_out[:2] = msg
+    for i in range(2):
+        coef = msg_out[i]
+        if coef != 0:
+           for j in range(1, 3):
+                result = mul(gen[j], coef)
+                print(result)
+                msg_out[i+j] ^= mul(gen[j], coef)
+                print(msg_out)
+    msg_out[:2] = msg
+    print(msg_out)
+    return msg_out	
+print(encode_msg([0,1], [1,3,2]))

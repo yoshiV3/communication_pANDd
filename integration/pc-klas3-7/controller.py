@@ -60,14 +60,18 @@ def transmit():
             for index in range(100):
                 interface.sendto(msg, target)
                 q = []
-                for i in range(2):
-                    number = queue[index*2+i]
-                    low  = number&15
-                    high = number&240 >> 4
-                    out_s = encode_msg([high,low], gen)
-                    out_b = (out_s[2] << 4) + out_s[3]          
-                    q.append(number)
-                    q.append(out_b)
+                number = queue[index*2]
+                low  = number&15
+                high = number&240 >> 4
+                out_s_one = encode_msg([high,low], gen)
+                number = queue[index*2+1]
+                low2  = number&15
+                high2 = number&240 >> 4
+                out_s_two = encode_msg([high2,low2], gen)       
+                q[0] = (high << 4) + high2
+                q[1] =  (low << 4) + low2
+                q[2] = (out_s_one[2]  << 4) + out_s_two[2]
+                q[3] = (out_s_one[3]  << 4) + out_s_two[3]
                 msg = bytes(q)
             interface.sendto(msg,target)
             time.sleep(0.05)
@@ -116,7 +120,9 @@ def send_decoded_data():
     global own_port_frd
     global own_port_out 
     global output_encoded
-    output = []     
+    output = []    
+    r_one  = [0,0,0,0]
+    r_two  = [0,0,0,0]  
     interface_out = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_out.bind((own_ip, own_port_two))
     target = (own_ip,own_port_out)
@@ -125,12 +131,14 @@ def send_decoded_data():
         if len(output_encoded)>0:
             print('sending')
             current = output_encoded.pop(0)
-            for word in range(200):
-                msg[1]  = (current[word*2]&15)
-                msg[0]  = (current[word*2]&240) >> 4
-                msg[3]  = (current[word*2+1]&15)
-                msg[2]  = (current[word*2+1]&240) >> 4
-                rslt    = decoder.decoder(msg)
+            for word in range(100):
+                for i in range(4):
+                    r_one[i] =  (current[word*2+i]&240) >> 4
+                    r_two[i] =  (current[word*2+i]&15)
+                rslt    = decoder.decoder(r_one)
+                number  = (rslt[0] << 4) + rslt[1]
+                output.append(number)
+                rslt    = decoder.decoder(r_two)
                 number  = (rslt[0] << 4) + rslt[1]
                 output.append(number)
             msg_o = bytes(output)
