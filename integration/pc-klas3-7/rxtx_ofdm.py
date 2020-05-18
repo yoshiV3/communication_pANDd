@@ -98,7 +98,7 @@ class Receiver(gr.hier_block2):
         self.decoders    = aux.decoder_reed_solomon_bb()
         self.decoderf    = aux.decoder_reed_solomon_bb()
         self.commit_unt = aux.commit_to_output_bb()
-        self.connect((self.decoders,1), blocks.nulll_sink(gr.sizeof_char)) 
+        self.connect((self.decoders,1), blocks.null_sink(gr.sizeof_char)) 
         self.connect(self.repack,(self.decoders,0), (self.decoderf,0), (self.commit_unt,0), self)
         self.connect((self.decoderf,1), (self.commit_unt,1))               
 		
