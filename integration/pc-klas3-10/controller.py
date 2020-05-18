@@ -73,7 +73,6 @@ def transmit():
                 q[2] = (out_s_one[2]  << 4) + out_s_two[2]
                 q[3] = (out_s_one[3]  << 4) + out_s_two[3]
                 msg = bytes(q)
-                time.sleep(0.1)
             interface.sendto(msg,target)
             time.sleep(0.05)
             msg = bytes([0,0,0,0])
