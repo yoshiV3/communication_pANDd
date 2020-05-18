@@ -13,6 +13,7 @@ for i in range(4):
     for index in range(len(recv)):
         if recv[index] != index:
             err = err + 1
+    print(recv)
     counter = counter + 1
     print("Received: " + str(counter) + " (number of errors:" + str(err)+")" )
   
