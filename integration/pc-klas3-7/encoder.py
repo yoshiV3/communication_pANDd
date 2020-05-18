@@ -15,10 +15,6 @@ def encode_msg(msg, gen):
         if coef != 0:
            for j in range(1, 3):
                 result = mul(gen[j], coef)
-                print(result)
                 msg_out[i+j] ^= mul(gen[j], coef)
-                print(msg_out)
     msg_out[:2] = msg
-    print(msg_out)
     return msg_out	
-print(encode_msg([0,1], [1,3,2]))

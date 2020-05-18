@@ -49,25 +49,25 @@ def transmit():
     interface.bind((own_ip, own_port))
     target   = (own_ip,own_port_tod)
     queue  = []
+    q      = [0,0,0,0]
     preamble = [x for x in range(8)]
     while True:
         if (trans_buffer.um > 0):
             with lock_input:
                 queue = trans_buffer.read().copy()
-            msg = byres(preamble[:4])
+            msg = bytes(preamble[:4])
             interface.sendto(msg, target)
-            msg = byres(preamble[4:])
+            msg = bytes(preamble[4:])
             for index in range(100):
                 interface.sendto(msg, target)
-                q = []
                 number = queue[index*2]
                 low  = number&15
-                high = number&240 >> 4
-                out_s_one = encode_msg([high,low], gen)
+                high =( number&240) >> 4
+                out_s_one = encoder.encode_msg([high,low], gen)
                 number = queue[index*2+1]
                 low2  = number&15
-                high2 = number&240 >> 4
-                out_s_two = encode_msg([high2,low2], gen)       
+                high2 = (number&240 )>> 4
+                out_s_two = encoder.encode_msg([high2,low2], gen)       
                 q[0] = (high << 4) + high2
                 q[1] =  (low << 4) + low2
                 q[2] = (out_s_one[2]  << 4) + out_s_two[2]
@@ -133,8 +133,8 @@ def send_decoded_data():
             current = output_encoded.pop(0)
             for word in range(100):
                 for i in range(4):
-                    r_one[i] =  (current[word*2+i]&240) >> 4
-                    r_two[i] =  (current[word*2+i]&15)
+                    r_one[i] =  (current[word*4+i]&240) >> 4
+                    r_two[i] =  (current[word*4+i]&15)
                 rslt    = decoder.decoder(r_one)
                 number  = (rslt[0] << 4) + rslt[1]
                 output.append(number)
