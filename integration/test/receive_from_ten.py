@@ -9,6 +9,7 @@ counter = 0
 for i in range(4):
     recv, r = interface.recvfrom(1024)
     recv = list(recv)
+    print(recv)
     err = 0
     for index in range(len(recv)):
         if recv[index] != index:

@@ -23,4 +23,3 @@ def inverse(x):
     	return __table_exp__[15 - __table_log__[x]] 
 def discrete_log(x):
 	return __table_log__[x]
-print(__table_exp__)

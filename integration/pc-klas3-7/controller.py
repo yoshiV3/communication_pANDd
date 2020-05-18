@@ -1,5 +1,6 @@
 import socket 
-import threading 
+import threading
+import time  
 import buffer
 import encoder
 import decoder
@@ -15,7 +16,7 @@ own_port_two = 9995
 lock_input      = threading.Lock()
 trans_buffer    = buffer.Buffer(5)
 output_encoded  = []
-gen             = encoder.rs_generator_poly
+gen             = encoder.rs_generator_poly()
 
 def put_data_from_socket_to_buffer():
     global lock_input
@@ -41,9 +42,12 @@ def transmit():
     global lock_input
     global updating_buffer
     global gen
+    global own_ip
+    global own_port
+    global own_port_tod
     interface = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface.bind((own_ip, own_port))
-    target   = (target_ip,own_port_tod)
+    target   = (own_ip,own_port_tod)
     queue  = []
     preamble = [x for x in range(8)]
     while True:
@@ -58,14 +62,18 @@ def transmit():
                 q = []
                 for i in range(2):
                     number = queue[index*2+i]
-                    low  = number&7
+                    low  = number&15
                     high = number&240 >> 4
-                    out_s = encode_msg([[high,low], gen)
+                    out_s = encode_msg([high,low], gen)
                     out_b = (out_s[2] << 4) + out_s[3]          
                     q.append(number)
                     q.append(out_b)
                 msg = bytes(q)
+            interface.sendto(msg,target)
+            time.sleep(0.05)
             msg = bytes([0,0,0,0])
+            interface.sendto(msg, target)
+            time.sleep(0.05)
             interface.sendto(msg, target)            
 def receive():
     global own_ip
@@ -113,18 +121,21 @@ def send_decoded_data():
     interface_out.bind((own_ip, own_port_two))
     target = (own_ip,own_port_out)
     msg = [0,0,0,0]
-    if len(output_encoded)>0:
-        current = output_encoded.pop(0)
-        for word in range(200):
-            msg[1]  = (current[word*2]&7)
-            msg[0]  = (current[word*2]&240) >> 4
-            msg[3]  = (current[word*2+1]&7)
-            msg[2]  = (current[word*2+1]&240) >> 4
-            rslt    = decoder.decoder(msg)
-            number  = (rslt[0] << 4) + rslt[1]
-            output.append(number)
-            msg = bytes(output)
-            interface_out.sendto(msg, target)              
+    while True:
+        if len(output_encoded)>0:
+            print('sending')
+            current = output_encoded.pop(0)
+            for word in range(200):
+                msg[1]  = (current[word*2]&15)
+                msg[0]  = (current[word*2]&240) >> 4
+                msg[3]  = (current[word*2+1]&15)
+                msg[2]  = (current[word*2+1]&240) >> 4
+                rslt    = decoder.decoder(msg)
+                number  = (rslt[0] << 4) + rslt[1]
+                output.append(number)
+            msg_o = bytes(output)
+            interface_out.sendto(msg_o, target)
+            output = []
 def main():
     threading.Thread(target=put_data_from_socket_to_buffer).start()
     threading.Thread(target=transmit).start()                                   

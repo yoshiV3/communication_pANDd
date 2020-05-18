@@ -11,7 +11,7 @@ for i in range(15):
 		exp ^= 19
 __table_exp__[31] = __table_exp__[16]
 __table_exp__[30] = __table_exp__[15]
-print(__table_log__)
+
 def mul(x,y):
 	if x == 0 or y == 0:
 		return 0
@@ -23,4 +23,3 @@ def inverse(x):
     	return __table_exp__[15 - __table_log__[x]] 
 def discrete_log(x):
 	return __table_log__[x]
-print(__table_exp__)

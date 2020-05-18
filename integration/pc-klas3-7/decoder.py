@@ -9,10 +9,11 @@ def syndromes(msg):
 def location(synd):
 	return 3-discrete_log(mul(synd[0], inverse(synd[1])))
 def correct_msg(msg, synd , pos):
-	magnitude = synd[1]#mul(omega[0],loc_inv) ^ omega[1]#mul(omega[0],pw(loc_inv, 2)) ^ mul(omega[1],loc_inv) ^ omega[2]
-	msg[pos]  = msg[pos] ^ magnitude
-	return msg 
-def decoder(msg):
+        magnitude = synd[1]#mul(omega[0],loc_inv) ^ omega[1]#mul(omega[0],pw(loc_inv, 2)) ^ mul(omega[1],loc_inv) ^ omega[2]
+        msg[pos]  = msg[pos] ^ magnitude
+        return msg 
+def decoder(inputm):
+	msg = inputm.copy()
 	synd = syndromes(msg)
 	if (synd[0] == synd[1] == 0):
 		return msg
