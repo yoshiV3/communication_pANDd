@@ -21,7 +21,7 @@ MANUAL_GAIN       = 40
 class test_bench_radio(gr.top_block):
     def __init__(self):
         gr.top_block.__init__(self, "Top Block")
-        udp_sink    = blocks.udp_sink(1,"192.168.0.1", 9993, 1)
+        udp_sink    = blocks.udp_sink(1,"192.168.0.1", 9993, 4)
         ofdm_recv   = o.Receiver()
         radio       = iio.pluto_source(RECEIVER, CENTRAL_FREQUENCY,
                                            SAMPLE_RATE,
