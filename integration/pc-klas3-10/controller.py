@@ -65,6 +65,8 @@ def transmit():
                     q.append(number)
                     q.append(out_b)
                 msg = bytes(q)
+            msg = bytes([0,0,0,0])
+            interface.sendto(msg, target)
             
 def receive():
     global own_ip
