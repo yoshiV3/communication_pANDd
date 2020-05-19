@@ -50,14 +50,16 @@ def transmit():
     target   = (own_ip,own_port_tod)
     queue  = []
     q      = [0,0,0,0]
-    preamble = [x for x in range(8)]
+    preamble = [x for x in range(12)]
     while True:
         if (trans_buffer.um > 0):
             with lock_input:
                 queue = trans_buffer.read().copy()
             msg = bytes(preamble[:4])
             interface.sendto(msg, target)
-            msg = bytes(preamble[4:])
+            msg = bytes(preamble[4:8])
+            interface.sendto(msg, target)
+            msg = bytes(preamble[8:])
             for index in range(100):
                 interface.sendto(msg, target)
                 number = queue[index*2]
@@ -86,7 +88,7 @@ def receive():
     interface_d  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     interface_d.bind((own_ip, own_port_frd))
     state = 0
-    hist  = [0]*8
+    hist  = [0]*12
     intra = []
     pre   = 0
     while True:  
@@ -113,7 +115,7 @@ def receive():
                 output_encoded.append(intra.copy())
                 intra = []
                 state = 0
-                hist  = [0]*8   
+                hist  = [0]*12 
 def send_decoded_data():
     global own_ip
     global own_port_two
