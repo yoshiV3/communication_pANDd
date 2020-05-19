@@ -15,7 +15,7 @@ QUADRA_TRACKING   = True
 DC_TRACKING       = True
 BB_TRACKING       = True
 GAIN_MODE         = "manual"
-MANUAL_GAIN       = 60
+MANUAL_GAIN       = 50
 
 
 class test_bench_radio(gr.top_block):
